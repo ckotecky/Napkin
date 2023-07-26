@@ -1,6 +1,6 @@
 import unittest
 
-from os import path
+from os import path, listdir
 from glob import glob
 
 from napkin.napkin import Napkin
@@ -14,17 +14,19 @@ class Test(unittest.TestCase):
 
 		scriptLocation = path.dirname(__file__)
 
-		cls._loadTests(cls, path.join(scriptLocation, 'pairs'))
+		cls.math_tests = cls._loadTests(cls, path.join(scriptLocation, 'pairs/math'))
+		cls.structure_tests = cls._loadTests(cls, path.join(scriptLocation, 'pairs/structure'))
 
 
 
-	def _loadTests(cls, testPath):
-		paths = glob(f'{testPath}/*.napkin')
+	def _loadTests(self, testPath):
+		paths = sorted(glob(f'{testPath}/*.napkin'))
 
-		cls.tests = []
+		tests = []
 
 		for sourcePath in paths:    
-			resultPath = sourcePath[:-7]
+			patternPath = sourcePath[:-7] # remove .napkin suffix to get the name of the file containing the expected result
+			resultPath = patternPath + '.tex'
 
 			with open(sourcePath, 'r') as f:
 				source = f.read()
@@ -34,23 +36,34 @@ class Test(unittest.TestCase):
 
 			name = path.basename(resultPath)
 
-			cls.tests.append((name, source, result))
+			tests.append((name, source, result))
+
+		return tests
 
 
 
 	def test_sanity(self):
 		result = self.napkin.parseAndCompile('a')
 
-		self.assertRegex(result, 'a')
+		self.assertEqual(result, 'a')
 
 
 
-	def test_all(self):
-		for i, (name, source, expected) in enumerate(Test.tests):
+	def test_math(self):
+		for i, (name, source, expected) in enumerate(Test.math_tests):
 			with self.subTest(msg = name, i = i):
 				result = self.napkin.parseAndCompile(source)
 
-				self.assertRegex(result, expected)
+				self.assertEqual(result, expected)
+
+
+	def test_structure(self):
+		for i, (name, source, expected) in enumerate(Test.structure_tests):
+			with self.subTest(msg = name, i = i):
+				result = self.napkin.parseAndCompile(source)
+
+				self.assertEqual(result, expected)
+
 
 
 
