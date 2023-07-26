@@ -22,16 +22,16 @@ class Lister():
         transformed = set() # to be removed from current children list
                 
         for i, child in enumerate(tree.children):
-            if self.indentable(child):
-                indent = self.indent(child)
+            if self._indentable(child):
+                indent = self._indent(child)
                 
-                if not self.isListItem(child):
+                if not self._isListItem(child):
                     indentOffset = 1
                 
                 else:
                     indentOffset = 0
                 
-                if self.isListItem(child) and (len(listStack) < 1 or indentStack[-1] < indent):                        
+                if self._isListItem(child) and (len(listStack) < 1 or indentStack[-1] < indent):                        
                     parentList = Tree('list', [child])
                     
                     if len(listStack) > 0:
@@ -59,7 +59,7 @@ class Lister():
                     if len(listStack) > 0:
                         parentList = listStack[-1]
 
-                        if self.isListItem(child):
+                        if self._isListItem(child):
                             parentList.children.append(child)
                             child.indent = parentList.indent + 1
                             
@@ -70,7 +70,7 @@ class Lister():
 
                         transformed.add(i)
                         
-                    elif len(listStack) < 1 and self.isListItem(child):
+                    elif len(listStack) < 1 and self._isListItem(child):
                         parentList = Tree('list', [child])
                         # transformed.add(i)
                         
@@ -98,7 +98,7 @@ class Lister():
         tree.children = remainingChildren
     
     
-    def indent(self, tree):
+    def _indent(self, tree):
         token = tree.children[0]
         indent = 0
         
@@ -114,14 +114,14 @@ class Lister():
         return 0
     
     
-    def isListItem(self, tree):
+    def _isListItem(self, tree):
         if isinstance(tree, Tree) and tree.data == 'list_item':
             return True
             
         return False
     
         
-    def indentable(self, tree):
+    def _indentable(self, tree):
         if isinstance(tree, Tree) and tree.data in self.indentableRules:
             return True
         
