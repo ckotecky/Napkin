@@ -316,7 +316,7 @@ class Compiler(Visitor_Recursive):
                     child.value = child.value.replace('   ', '\\enskip')
                     child.value = child.value.replace('  ', '\\;')
                     child.value = child.value.replace('\t', '\\quad')
-                    child.value += ' '
+                    # child.value += ' '
 
                 result += self._escapeCharacters(child.value)
                 # tree.result += self._escapeCharacters(child.value)
@@ -374,7 +374,7 @@ class Compiler(Visitor_Recursive):
         startIndex = 1 + (tree.children[0].type != 'CENTER_OPEN')
         endIndex = len(tree.children) - 1
         
-        content = '\t' + self._gatherFromChildren(tree, startIndex = startIndex, endIndex = endIndex, write = False)
+        content = '\t' + self._gatherFromChildren(tree, startIndex = startIndex, endIndex = endIndex, write = False).strip()
         
         tree.result += content.replace('\n', '\n\t')
         tree.result += '\n\n\\end{center}\n'
@@ -546,11 +546,15 @@ class Compiler(Visitor_Recursive):
     def list(self, tree):
         indent = '\t' * tree.indent
         
-        tree.result = f'\n\n{indent}\\begin{{itemize}}\n{indent}\t\\itemsep0em\n\n'
+        tree.result = f'\\begin{{itemize}}\n'
+
+        if tree.indent < 1:
+            tree.result += '\n\t\\itemsep0em\n'
         
-        self._gatherFromChildren(tree)
+        content = '\t' + self._gatherFromChildren(tree, write = False)
         
-        tree.result += f'\n\n{indent}\\end{{itemize}}\n'
+        tree.result += content.replace('\n', '\n\t')
+        tree.result += f'\n\\end{{itemize}}\n'
 
 
     def list_bullet(self, tree):
@@ -577,12 +581,14 @@ class Compiler(Visitor_Recursive):
 
 
         if len(bullet) > 0:
-            tree.result = f'\n{indent}\\item[{bullet}] '        
+            tree.result = f'\n\\item[{bullet}]'        
             
         else:
-            tree.result = f'\n{indent}\\item ' 
+            tree.result = f'\n\\item' 
             
         self._gatherFromChildren(tree, startIndex = 1 + startIndex)
+
+        tree.result += '\n'
 
         
     def spacing(self, tree):

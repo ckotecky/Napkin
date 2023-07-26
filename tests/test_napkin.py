@@ -11,11 +11,13 @@ class Test(unittest.TestCase):
 	@classmethod
 	def setUpClass(cls):
 		cls.napkin = Napkin()
+		cls.maxDiff = None
 
 		scriptLocation = path.dirname(__file__)
 
 		cls.math_tests = cls._loadTests(cls, path.join(scriptLocation, 'pairs/math'))
 		cls.structure_tests = cls._loadTests(cls, path.join(scriptLocation, 'pairs/structure'))
+		cls.list_tests = cls._loadTests(cls, path.join(scriptLocation, 'pairs/lists'))
 
 
 
@@ -46,6 +48,15 @@ class Test(unittest.TestCase):
 		result = self.napkin.parseAndCompile('a')
 
 		self.assertEqual(result, 'a')
+
+
+
+	def test_lists(self):
+		for i, (name, source, expected) in enumerate(Test.list_tests):
+			with self.subTest(msg = name, i = i):
+				result = self.napkin.parseAndCompile(source)
+
+				self.assertEqual(result.strip(), expected.strip())
 
 
 
