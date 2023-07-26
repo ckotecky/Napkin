@@ -1,8 +1,0 @@
-Metadata-Version: 2.1
-Name: Napkin
-Version: 0.0.0
-Summary: Napkin language.
-Author: Cyril Kotecký
-Classifier: Progamming Language :: Python :: 3.9
-Requires-Python: >=3.9
-License-File: LICENSE
