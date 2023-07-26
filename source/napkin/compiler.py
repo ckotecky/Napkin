@@ -292,21 +292,24 @@ class Compiler(Visitor_Recursive):
     
     def __default__(self, tree):
         tree.result = ''
+        tree.indent = 0
         
         self._gatherFromChildren(tree)
 
                 
-    def _gatherFromChildren(self, tree, startIndex = 0, endIndex = None, space = ''):
+    def _gatherFromChildren(self, tree, startIndex = 0, endIndex = None, space = '', write = True):
         if endIndex == None:
             endIndex = len(tree.children)
+
+        result = ''
         
         for i, child in enumerate(tree.children[startIndex:endIndex]):
             if i > 0:
-                tree.result += space
+                result += space
                 
             if isinstance(child, Tree):
                 # tree.result += self._escapeCharacters(child.result)
-                tree.result += child.result
+                result += child.result
                 
             elif isinstance(child, Token):
                 if child.type == 'INLINE_WHITESPACE':                    
@@ -315,9 +318,14 @@ class Compiler(Visitor_Recursive):
                     child.value = child.value.replace('\t', '\\quad')
                     child.value += ' '
 
-                tree.result += self._escapeCharacters(child.value)
+                result += self._escapeCharacters(child.value)
                 # tree.result += self._escapeCharacters(child.value)
                 
+        if write:
+            tree.result += result
+
+        return result
+
     
     def _escapeCharacters(self, string):
         for original, escaped in self.escapedCharacterMap.items():
@@ -361,14 +369,15 @@ class Compiler(Visitor_Recursive):
         
         
     def center(self, tree):
-        tree.result = '\\begin{center}\n'
+        tree.result = '\\begin{center}\n\n'
 
         startIndex = 1 + (tree.children[0].type != 'CENTER_OPEN')
         endIndex = len(tree.children) - 1
         
-        self._gatherFromChildren(tree, startIndex = startIndex, endIndex = endIndex)
+        content = '\t' + self._gatherFromChildren(tree, startIndex = startIndex, endIndex = endIndex, write = False)
         
-        tree.result += '\n\\end{center}\n'
+        tree.result += content.replace('\n', '\n\t')
+        tree.result += '\n\n\\end{center}\n'
         
         
     def table(self, tree):
