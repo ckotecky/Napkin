@@ -1,9 +1,7 @@
 import unittest
-import re
 
 from os import path
 from glob import glob
-from parameterized import parameterized
 
 from napkin.napkin import Napkin
 
