@@ -9,7 +9,7 @@ class Napkin:
 	def __init__(self):
 		scriptLocation = path.dirname(__file__)
 
-		with open(path.join(scriptLocation, 'napkin.lark'), 'r') as f:
+		with open(path.join(scriptLocation, 'grammar.lark'), 'r') as f:
 			grammar = f.read()
 
 		self.parser = Lark(grammar)

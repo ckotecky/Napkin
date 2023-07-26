@@ -355,13 +355,13 @@ class Compiler(Visitor_Recursive):
     def math_block(self, tree):
         tree.result = '$ '
         
-        self._gatherFromChildren(tree, startIndex = 1, endIndex = len(tree.children) - 1)
+        self._gatherFromChildren(tree, startIndex = 1, endIndex = len(tree.children) - 1, space = ' ')
         
         tree.result += ' $'
         
         
     def center(self, tree):
-        tree.result = '\n\\begin{center}\n'
+        tree.result = '\\begin{center}\n'
 
         startIndex = 1 + (tree.children[0].type != 'CENTER_OPEN')
         endIndex = len(tree.children) - 1
@@ -414,7 +414,7 @@ class Compiler(Visitor_Recursive):
 
     def chapter_header(self, tree):
         title = tree.children[0].result
-        tree.result = f'\\clearpage \\chapter{{{title}}}\n'
+        tree.result = f'\\chapter{{{title}}}\n'
 
         
     def section_header(self, tree):
@@ -788,7 +788,8 @@ class Compiler(Visitor_Recursive):
             elif hasattr(child, 'result'):
                 tree.result += child.result
 
-        tree.result += ' '
+        # if tree.result[-1] != '}':
+        # tree.result += ' '
         
                     
     def underline_overline(self, tree):        
