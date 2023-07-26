@@ -619,7 +619,7 @@ class Compiler(Visitor_Recursive):
             tree.result = '\n\\left. '
         
         elif openBracket == '{':
-            tree.result = '\n\\left\{ '
+            tree.result = r'\n\\left\{ '
         
         else:
             tree.result = f'\n\\left{openBracket} '
@@ -643,7 +643,7 @@ class Compiler(Visitor_Recursive):
             tree.result += ' \\right. '
         
         elif closeBracket == '}':
-            tree.result += ' \\right\} '
+            tree.result += r' \\right\} '
         
         else:
             tree.result += f' \\right{closeBracket} '
@@ -729,10 +729,10 @@ class Compiler(Visitor_Recursive):
                 
             elif isinstance(child, Token):
                 if child.value == '{{':
-                    tree.result += ' \{ '
+                    tree.result += r' \{ '
                     
                 elif child.value == '}}':
-                    tree.result += ' \} '
+                    tree.result += r' \} '
 
                 else:
                     tree.result += child.value    
@@ -760,10 +760,10 @@ class Compiler(Visitor_Recursive):
             
             for child in tree.children:
                 if isinstance(child, Token) and child.type == 'OPEN_BRACKET_EXPLICIT':
-                    tree.result += ' \{ '
+                    tree.result += r' \{ '
                     
                 elif isinstance(child, Token) and child.type == 'CLOSE_BRACKET_EXPLICIT':
-                    tree.result += ' \} '
+                    tree.result += r' \} '
                     
                 elif hasattr(child, 'result'):
                     tree.result += child.result
@@ -780,10 +780,10 @@ class Compiler(Visitor_Recursive):
         
         for i, child in enumerate(tree.children):
             if isinstance(child, Token) and child.type == 'OPEN_BRACKET_EXPLICIT':
-                tree.result += ' \{ '
+                tree.result += r' \{ '
                 
             elif isinstance(child, Token) and child.type == 'CLOSE_BRACKET_EXPLICIT':
-                tree.result += ' \} '
+                tree.result += r' \} '
                 
             elif hasattr(child, 'result'):
                 tree.result += child.result
