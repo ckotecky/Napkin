@@ -74,7 +74,7 @@ start: (_INLINE_WHITESPACE | _NEWLINE)* (_object NEWLINE+)* _object (_INLINE_WHI
 
 title: (TITLE | INLINE_WHITESPACE | math_block)+
 
-_object: (chapter_header | section_header | subsection_header | subsubsection_header | list_item | block | table | center | content)
+_object: (chapter_header | section_header | subsection_header | subsubsection_header | list_item | block | table | center | content | inline_whitespace)
 _inline_object: (chapter_header | section_header | subsection_header | subsubsection_header | list_item | block | table | center | inline_content)
 
 content: INLINE_WHITESPACE? (image | comment | sanitized_text | math_block) (image | comment | text | math_block | INLINE_WHITESPACE)* INLINE_WHITESPACE?
@@ -133,20 +133,24 @@ image: IMAGE
 NUMBER: /[0-9]/
 LETTER: /[a-zA-Z]/
 
+// brackets will cause trouble in conjunction to sub-expressions
+// could work if they had to be paired
 PARENTHESES: "(" | ")" | "[" | "]" | /\|(?!\-)/ | "{{" | "}}"
-PUNCTUATION: "," | "'" | ":" | ";" | "?" | "\""  | " /" | "/ "
+PUNCTUATION: "," | "'" | ":" | ";" | "?" | "\""  | " /" | "/ " | "."
 
-SHORTCUT_OPERATOR: "<=>" | "<=" | "=>" | "|->" | "->" | "<-" | "<->" | ">>" | "<<" | "\\Σ" | "\\π" | "\\∪" | "\\∩" | "\\∫" | /\\(?![\\\]\[\)\(}{\|)])/
-UNICODE_OPERATOR: /[∧∨∩∪∀∃∄∂∫≤≥<>\!\|∈∉∙≆≃≅×±¬∤⊍≋\~≡≢≈≉⊂⊆⊃⊇≠\=\+\-\*]/
+SHORTCUT_OPERATOR: "<=>" | "<=" | "=>" | "|->" | "->" | "<-" | "<->" | ">>" | "<<" | "\\Σ" | "\\π" | "\\∪" | "\\∩" | "\\∫" | "\\∨" | "\\∧" | "\\⊕"
+UNICODE_OPERATOR: /[∧∨∩∪∀∃∄∂∫≤≥<>≪≫\!\|∈∉∙≆≃≅×±¬∤⊍⨄\~≡≢≈≉⊂⊆⊃⊇≠\=\+\-\*⊤⊥⊨⊢⌈⌉⌊𝨨⌋⊈⊉]/ | /(?<= )\\(?= )/
+// old backslash /\\(?![\\\]\[\)\(}{\|)])/
 KEYWORD_OPERATOR:  "limsup" | "liminf" | "arccos" | "arcsin"  | "argmax" | "argmin" | "mod" | "min" | "max" | "sin" | "cos" | "tan" | "exp" | "log" | "ln" | "sup" | "inf" | "sgn" | "lim" | "diag" | "span" |  "conv" |  "cone" 
 
-MATH_SYMBOLS: /[∞⟨⟩⋱︙⠇∇⊥∅↾◦○￮∝¶✓≼≺⇳⇓⇑↓↑⊄⊅⋡∋⊴⊵⊲⊳⋪⋫⋬⋭∦⌈⌉⌊𝨨⌋⊊⊋]/
+MATH_SYMBOLS: /[∞⟨⟩⋱︙⠇∇⊥∅↾◦○￮∝¶✓≼≺⇳⇕⇓⇑↓↑⊄⊅⋡∋⊴⊵⊲⊳⋪⋫⋬⋭∦⌈⌉⌊𝨨⌋⊊⊋]/
 MATH_GREEK_SYMBOLS: /[αβγδεφηικλμν𝛝ωπΘψρστυχξζΩΨΣΔΦΓΛΞ]/
 MATH_BB_SYMBOLS: /[𝔸𝔹ℂ𝔻𝔼𝔽𝔾ℍ𝕀𝕁𝕂𝕃𝕄ℕ𝕆ℙℚℝ𝕊𝕋𝕌𝕍𝕎𝕏𝕐ℤ]/
 MATH_CAL_SYMBOLS: /[𝓐𝓑𝓒𝓓𝓔𝓕𝓖𝓗𝓘𝓙𝓚𝓛𝓜𝓝𝓞𝓟𝓠𝓡𝓢𝓣𝓤𝓥𝓦𝓧𝓨𝓩]/
 
 OPEN_BRACKET: /(?<!{){(?!{)/
-CLOSE_BRACKET: /(?<!})}(?!})/
+// CLOSE_BRACKET: /(?<!})}/
+CLOSE_BRACKET: "}"
 
 OPEN_BRACKET_EXPLICIT: "{{"
 CLOSE_BRACKET_EXPLICIT: "}}"
@@ -178,7 +182,7 @@ SUBSCRIPT_OPERATOR: /_(?![ }`])/
 
 math_content: _INLINE_WHITESPACE? (expression | array | _structural | inline_whitespace | NEWLINE | comment)+ _INLINE_WHITESPACE?
 
-expression: (_math_object inline_whitespace)* _math_object
+expression: (_math_object inline_whitespace?)* _math_object
 sub_expression: OPEN_BRACKET _INLINE_WHITESPACE? expression _INLINE_WHITESPACE? CLOSE_BRACKET
               | symbol
           
@@ -188,8 +192,8 @@ _math_object: term | sub_super_script_term | underline_overline | fraction | roo
 
 _structural: PUNCTUATION | PARENTHESES
 
-term: (symbol | _structural)+
-symbol: SHORTCUT_OPERATOR | UNICODE_OPERATOR | KEYWORD_OPERATOR | NUMBER | LETTER | MATH_GREEK_SYMBOLS | MATH_BB_SYMBOLS | MATH_CAL_SYMBOLS | MATH_SYMBOLS
+term: symbol+
+symbol: SHORTCUT_OPERATOR | UNICODE_OPERATOR | KEYWORD_OPERATOR | NUMBER | LETTER | MATH_GREEK_SYMBOLS | MATH_BB_SYMBOLS | MATH_CAL_SYMBOLS | MATH_SYMBOLS | PUNCTUATION | PARENTHESES
 
 text_block: _TEXT_BLOCK_DELIMITER MATH_TEXT _TEXT_BLOCK_DELIMITER
 

@@ -32,7 +32,7 @@ class Compiler(Visitor_Recursive):
         'ex' : 'example',
         'exc' : 'exercise',
         'exr' : 'exercise',
-        'lm' : 'lem',
+        'lm' : 'lemma',
         'ob' : 'observation',
         'pz' : 'pozorovani',
         'pp' : 'proposition',
@@ -162,6 +162,7 @@ class Compiler(Visitor_Recursive):
         '≼' : '\\preceq',
         '≺' : '\\prec',
         '⊀' : '\\nprec',
+        '⇕' : '\\Updownarrow',
         '⇳' : '\\Updownarrow',
         '↓' : '\\downarrow',
         '↑' : '\\uparrow',
@@ -191,6 +192,91 @@ class Compiler(Visitor_Recursive):
 
     }
 
+    shortcut_operator_map = {
+        '<=>' : '\\iff',
+        '=>' : '\\implies',
+        '<=' : '\\impliedby',
+        '<->' : '\\leftrightarrow',
+        '|->' : '\\mapsto',
+        '->' : '\\to',
+        '<-' : '\\leftarrow',
+        '<<' : '\\ll',
+        '>>' : '\\gg',
+        '\\Σ' : '\\sum\\limits',
+        '\\π' : '\\prod\\limits',
+        '\\∪' : '\\bigcup\\limits',
+        '\\∩' : '\\bigcap\\limits',
+        '\\∫' : '\\int\\limits', 
+        '\\∨' : '\\bigvee\\limits',
+        '\\∧' : '\\bigwedge\\limits',
+        '\\⊕' : '\\bigoplus\\limits',
+    }
+
+    unicode_operator_map = {
+        '∧' : '\\land',
+        '∨' : '\\lor',
+        '∩' : '\\cap',
+        '∪' : '\\cup',
+        '∀' : '\\forall',
+        '∃' : '\\exists',
+        '∄' : '\\nexists',
+        '∂' : '\\partial',   
+        '=' : '=',
+        '≠' : '\\neq',
+        '~' : '\\sim',
+        '≡' : '\\equiv',
+        '≢' : '\\not\\equiv',
+        '≈' : '\\approx',
+        '≉' : '\\not\\approx',
+        '⊂' : '\\subset',
+        '⊆' : '\\subseteq',
+        '⊈' : '\\nsubseteq',
+        '⊃' : '\\supset',
+        '⊇' : '\\supseteq',
+        '⊉' : '\\nsupseteq',
+        '≠' : '\\neq',
+
+        '\\' : '\\backslash',
+
+        '=' : '=',
+        '+' : '+',
+        '-' : '-',
+        '/' : '/',
+        '*' : '*',
+
+        '≤' : '\\leq',
+        '≥' : '\\geq',
+        '<' : '<',
+        '>' : '>',
+        '≪' : '\\ll',
+        '≫' : '\\gg',
+        '!' : '!',
+        '|' : '|',
+        ':' : ':',
+        '∈' : '\\in',
+        '∉' : '\\notin',
+        '∙' : '\\cdot',
+        '≆' : '\\not\\approxeq',
+        '≅' : '\\approxeq',
+        '≃' : '\\simeq',
+        '×' : '\\times',
+        '±' : '\\pm',
+        '¬' : '\\neg',
+        '∤' : '\\nmid',
+        '⊍' : '\\uplus',
+        '⨄' : '\\uplus',
+
+        '⊤' : '\\top',
+        '⊥' : '\\bot',
+        '⊨' : '\\models',
+        '⊢' : '\\vdash',
+
+        '⌈' : '\\lceil',
+        '⌉' : '\\rceil',
+        '⌊' : '\\lfloor',
+        '⌋' : '\\rfloor',
+    }
+
     operator_map = {
         '<=>' : '\\iff',
         '=>' : '\\implies',
@@ -203,7 +289,7 @@ class Compiler(Visitor_Recursive):
         '>>' : '\\gg',
         '~' : '\\sim',
         '≡' : '\\equiv',
-        '≢' : '\\nequiv',
+        '≢' : '\\not\\equiv',
         '≈' : '\\approx',
         '≉' : '\\not\\approx',
         '⊂' : '\\subset',
@@ -254,7 +340,7 @@ class Compiler(Visitor_Recursive):
         '⊍' : '\\uplus',
     }
 
-    operator_word_map = {
+    keyword_operator_map = {
         'mod' : '\\mod',
         'min' : '\\min\\limits',
         'max' : '\\max\\limits',
@@ -477,67 +563,6 @@ class Compiler(Visitor_Recursive):
             tree.result = f'\n\\begin{{{blockType}}}[{title}]\n'
 
 
-
-
-        # firstChild = titleChild.children[0]
-
-        # if isinstance(firstChild, Token) and firstChild.type == :
-        #     titleIndex = 0
-
-        #     blockType = 'block'    
-
-        #     title = titleChikd.children[1].result
-
-
-        # else:
-        #     titleIndex = 1
-
-        #     blockTag = titleChild.children[0].value.lower()
-        #     blockType = self.blockMap[blockTag]
-
-
-        #     if len(titleChild.children) > 1:
-        #         title = titleChikd.children[1].result
-
-        #     else:
-        #         title = None
-
-        # if len(titleChild.children) >= titleIndex + 1:
-        #     title = titleChild.children[titleIndex].result
-        #     tree.result = f'\n\\begin{{{blockType}}}[{title}]\n'
-
-        # else:
-        #     tree.result = f'\n\\begin{{{blockType}}}\n'
-
-
-
-
-        # if isinstance(child, Tree) or child.type != 'BLOCK_TYPE_TAG': 
-        #     blockType = 'block'     
-
-        #     child = tree.children[1]
-
-        # else:
-        #     blockTag = titleChild.children[0].value.lower()
-        #     blockType = self.blockMap[blockTag]
-
-        #     if len(titleChild.children) > 1:
-        #         title = titleChild.children[1].result
-
-        #     else:
-        #         title = ''
-
-
-
-        # if isinstance(child, Tree):
-        #     title = child.result     
-        #     tree.result = f'\n\\begin{{{blockType}}}[{title}]\n'
-        
-        # else:
-        #     tree.result = f'\n\\begin{{{blockType}}}\n'
-        
-
-
         self._gatherFromChildren(tree, startIndex = 1)
         
         tree.result += f'\n\\end{{{blockType}}}\n'
@@ -568,7 +593,6 @@ class Compiler(Visitor_Recursive):
 
     
     def list_item(self, tree):
-        # print(f'list item {tree}')
         indent = '\t' * tree.indent
 
         if isinstance(tree.children[0], Token):
@@ -634,7 +658,7 @@ class Compiler(Visitor_Recursive):
             tree.result = '\n\\left. '
         
         elif openBracket == '{':
-            tree.result = r'\n\\left\{ '
+            tree.result = '\n\\left\\{ '
         
         else:
             tree.result = f'\n\\left{openBracket} '
@@ -658,7 +682,7 @@ class Compiler(Visitor_Recursive):
             tree.result += ' \\right. '
         
         elif closeBracket == '}':
-            tree.result += r' \\right\} '
+            tree.result += ' \\right\\} '
         
         else:
             tree.result += f' \\right{closeBracket} '
@@ -697,7 +721,25 @@ class Compiler(Visitor_Recursive):
             
         elif child.type == 'MATH_OPWORD':
             tree.result = f'{self.operator_word_map[tree.children[0].value]}'
+
+        elif child.type == 'PUNCTUATION' or child.type == 'PARENTHESES':
+            content = f'{tree.children[0].value}'
+        
+            if content == '{{' or content == '}}':
+                content = '\\' + content[0]
             
+            tree.result = content   
+
+        elif child.type == 'UNICODE_OPERATOR':         
+            tree.result = f'{self.unicode_operator_map[tree.children[0].value]}'
+
+        elif child.type == 'SHORTCUT_OPERATOR':         
+            tree.result = f'{self.shortcut_operator_map[tree.children[0].value]}'
+
+        elif child.type == 'KEYWORD_OPERATOR':
+            tree.result = f'{self.keyword_operator_map[tree.children[0].value]}'
+
+
             
     def fraction(self, tree):    
         tree.result = f'\\frac{{{tree.children[0].result}}}{{{tree.children[-1].result}}}'
@@ -737,6 +779,8 @@ class Compiler(Visitor_Recursive):
                 # if i > 0:
                 #     tree.result += ' '
                     
+                # print(tree.data, child.data, child.children[0].type)
+
                 tree.result += child.result
                 
                 if i < len(tree.children) - 1 and child.children[0].type in self.commandSymbols:
