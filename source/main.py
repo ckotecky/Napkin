@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 
-from napkin.napkin import Napkin
+from napkin import Napkin
 import argparse
 import timeit
 
