@@ -1,11 +1,16 @@
 - list a item 1
-	- sublist b item 1
-	- sublist b item 2
+	- sublist a item 1
+	- sublist a item 2
 - list a item 2
 
 
 - list a item 3
+	- sublist b item 1
+
+
+	- sublist b item 2
+		
 	- sublist c item 1
 
-
-	- sublist c item 2
+ 
+- list b item 1
