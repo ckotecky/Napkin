@@ -1,0 +1,1 @@
+- Four brackets in row (`{{{{` or `}}}}`) should be disallowed to avoid problematic ambiguity. Easy to check and throw and error for the user to add some spaces.
