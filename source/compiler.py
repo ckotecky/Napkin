@@ -136,6 +136,7 @@ class Compiler(Visitor_Recursive):
         'Ω' : '\\Omega',
         'Σ' : '\\Sigma',
         'Δ' : '\\Delta',
+        '∆' : '\\Delta',
         'Φ' : '\\Phi',
         'Γ' : '\\Gamma',
         'Λ' : '\\Lambda',
@@ -188,7 +189,7 @@ class Compiler(Visitor_Recursive):
         '⌊𝨨' : '\\lfloor',
         '⌋' : '\\rfloor',
         '⊊' : '\\subsetneq',
-        '⊋' : '\\supsetneq'
+        '⊋' : '\\supsetneq',
 
     }
 
@@ -246,6 +247,8 @@ class Compiler(Visitor_Recursive):
 
         '≤' : '\\leq',
         '≥' : '\\geq',
+        '≰' : '\\not\\leq',
+        '≱' : '\\not\\geq',
         '<' : '<',
         '>' : '>',
         '≪' : '\\ll',
@@ -275,6 +278,10 @@ class Compiler(Visitor_Recursive):
         '⌉' : '\\rceil',
         '⌊' : '\\lfloor',
         '⌋' : '\\rfloor',
+
+        '▢' : '\\Box',
+
+        '†' : '\\dagger'
     }
 
     operator_map = {
@@ -390,7 +397,7 @@ class Compiler(Visitor_Recursive):
         result = ''
         
         for i, child in enumerate(tree.children[startIndex:endIndex]):
-            if i > 0 and not (isinstance(child, Tree) and (child.data.value == 'inline_whitespace' or tree.children[i - 1].data.value == 'inline_whitespace')):
+            if space != '' and i > 0 and not (isinstance(child, Tree) and (child.data.value == 'inline_whitespace')) and not (isinstance(tree.children[i - 1], Tree) and tree.children[i - 1].data.value == 'inline_whitespace'):
                 result += space
 
             if isinstance(child, Tree):
@@ -399,9 +406,9 @@ class Compiler(Visitor_Recursive):
                 
             elif isinstance(child, Token):
                 if child.type == 'INLINE_WHITESPACE':                    
-                    child.value = child.value.replace('   ', '\\enskip')
-                    child.value = child.value.replace('  ', '\\;')
-                    child.value = child.value.replace('\t', '\\quad')
+                    child.value = child.value.replace('   ', '\\enskip ')
+                    child.value = child.value.replace('  ', '\\; ')
+                    child.value = child.value.replace('\t', '\\quad ')
 
                 result += self._escapeCharacters(child.value)
                 
@@ -434,20 +441,11 @@ class Compiler(Visitor_Recursive):
         tree.result += f'{{{path}}}'
 
 
-
-        # temp = tree.children[0].value.split('[')
-        # scale 
-
-        # tree.result = '\\includegraphics[scale=0.6]{'
-        # tree.result += tree.children[0].value.split('{')[1][:-1]
-        # tree.result += '}'
-
-                
                 
     def math_block(self, tree):
         tree.result = '$'
         
-        self._gatherFromChildren(tree, startIndex = 1, endIndex = len(tree.children) - 1, space = ' ')
+        self._gatherFromChildren(tree, space = ' ')
         
         tree.result += '$'
         
@@ -465,8 +463,6 @@ class Compiler(Visitor_Recursive):
         
         
     def table(self, tree):
-        # must also sort out column numbers, sepparators, etc.
-        
         columnCount = 1
         
         rows = ''
@@ -534,7 +530,7 @@ class Compiler(Visitor_Recursive):
 
         if len(titleChild.children) < 1:
             blockType = 'block'
-            tree.result = '\n\\begin{block}\n'
+            tree.result = '\n\\begin{block}\\;\n'
 
 
         elif len(titleChild.children) == 1:
@@ -544,13 +540,13 @@ class Compiler(Visitor_Recursive):
                 blockTag = firstChild.value.lower()
                 blockType = self.blockMap[blockTag]
 
-                tree.result = f'\n\\begin{{{blockType}}}\n'
+                tree.result = f'\n\\begin{{{blockType}}}\\;\n'
 
             else:
                 title = firstChild.result
                 blockType = 'block'
 
-                tree.result = f'\n\\begin{{block}}[{title}]\n'
+                tree.result = f'\n\\begin{{block}}[{title}]\\;\n'
 
         elif len(titleChild.children) > 1:
             blockTag = titleChild.children[0].value.lower()
@@ -558,7 +554,7 @@ class Compiler(Visitor_Recursive):
             
             title = titleChild.children[1].result
 
-            tree.result = f'\n\\begin{{{blockType}}}[{title}]\n'
+            tree.result = f'\n\\begin{{{blockType}}}[{title}]\\;\n'
 
 
         self._gatherFromChildren(tree, startIndex = 1)
@@ -649,11 +645,21 @@ class Compiler(Visitor_Recursive):
         rows = ''
                 
         for child in tree.children[1:-2]:
-            rows += '\t' + child.result + '\\\\\n'
+            r = child.result
+
+            if r.lstrip()[0] == '[':
+                r = r.replace('[', '{[}', 1)
+
+            rows += '\t' + r + '\\\\\n'
             columnCount = max(columnCount, child.columnCount)
 
         # add last row sepparately without a latex newline at the end
-        rows += '\t' + tree.children[-2].result + '\n'
+        r = '\t' + tree.children[-2].result + '\n'
+
+        if r.lstrip()[0] == '[':
+            r = r.replace('[', '{[}', 1)
+
+        rows += r
         columnCount = max(columnCount, tree.children[-2].columnCount)
 
         columnSignature = columnCount * 'c'
@@ -752,31 +758,23 @@ class Compiler(Visitor_Recursive):
             
         elif child.type == 'TAB':
             tree.result = ' \\quad '
+
+
+    def term_a(self, tree):
+        tree.result = ''
+        tree.indent = 0
         
+        self._gatherFromChildren(tree, space = ' ')   
+
         
     def term(self, tree):
         tree.result = ''
         
         for i, child in enumerate(tree.children):
-            if isinstance(child, Tree):
-                if i > 0 and child.children[0].type in self.commandSymbols:
-                    tree.result += ' '
+            tree.result += child.result
 
-                tree.result += child.result
-                
-            elif isinstance(child, Token):
-                if i > 0 and child.type in self.commandSymbols:
-                    tree.result += ' '      
-
-                if child.value == '{{':
-                    tree.result += r' \{ '
-                    
-                elif child.value == '}}':
-                    tree.result += r' \} '
-
-                else:
-                    tree.result += child.value    
-
+            if i < len(tree.children) - 1 and child.result[:1] == '\\':
+                tree.result += ' '
   
 
                 
@@ -792,12 +790,6 @@ class Compiler(Visitor_Recursive):
             
         tree.result = content
 
-
-    def math_content(self, tree):
-        tree.result = ''
-        tree.indent = 0
-        
-        self._gatherFromChildren(tree, space = ' ')
         
         
     def sub_expression(self, tree):
@@ -805,12 +797,6 @@ class Compiler(Visitor_Recursive):
             tree.result = ''
             
             for child in tree.children:
-                # if isinstance(child, Token) and (child.type == 'SINGLE_OPEN_BRACKET' or child.type == 'OPEN_BRACKET'):
-                #     tree.result += r'{'
-                    
-                # elif isinstance(child, Token) and (child.type == 'SINGLE_CLOSE_BRACKET' or child.type == 'CLOSE_BRACKET'):
-                #     tree.result += r'}'
-                    
                 if hasattr(child, 'result'):
                     tree.result += child.result
    
@@ -823,20 +809,21 @@ class Compiler(Visitor_Recursive):
         
     def expression(self, tree):
         tree.result = ''
-        
-        for i, child in enumerate(tree.children):
-            if hasattr(child, 'result'):
-                tree.result += child.result
+
+        self._gatherFromChildren(tree, space = ' ')
         
                     
     def underline_overline(self, tree):        
-        if isinstance(tree.children[1], Token): # nothing before subexpression
-            result = tree.children[0].result
-            operation = tree.children[1]
+        # if isinstance(tree.children[1], Token): # nothing before subexpression
+        #     result = tree.children[0].result
+        #     operation = tree.children[1]
             
-        else:
-            result = tree.children[1].result
-            operation = tree.children[2]      
+        # else:
+        #     result = tree.children[1].result
+        #     operation = tree.children[2]  
+
+        result = tree.children[1].result
+        operation = tree.children[0]    
         
         if operation.type == 'UNDERLINE_OPERATOR':
             result = f'\\underline{{{result}}}'

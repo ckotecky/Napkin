@@ -106,7 +106,7 @@ table_content: (comment | text | math_block | _INLINE_WHITESPACE)*
 
 // math block
 
-math_block: MATH_BLOCK_DELIMITER math_content MATH_BLOCK_DELIMITER
+math_block: _MATH_BLOCK_DELIMITER _INLINE_WHITESPACE? expression _INLINE_WHITESPACE? _MATH_BLOCK_DELIMITER
 
 // comment
 
@@ -139,12 +139,12 @@ PARENTHESES: "(" | ")" | "[" | "]" | /\|(?!\-)/ | "{{" | "}}"
 PUNCTUATION: "," | "'" | ":" | ";" | "?" | "\""  | " /" | "/ " | "."
 
 SHORTCUT_OPERATOR: "<=>" | "<=" | "=>" | "|->" | "->" | "<-" | "<->" | ">>" | "<<" | "\\Σ" | "\\π" | "\\∪" | "\\∩" | "\\∫" | "\\∨" | "\\∧" | "\\⊕"
-UNICODE_OPERATOR: /[∧∨∩∪∀∃∄∂∫≤≥<>≪≫\!\|∈∉∙≆≃≅×±¬∤⊍⨄\~≡≢≈≉⊂⊆⊃⊇≠\=\+\-\*⊤⊥⊨⊢⌈⌉⌊𝨨⌋⊈⊉]/ | /(?<= )\\(?= )/
+UNICODE_OPERATOR: /[∧∨∩∪∀∃∄∂∫≤≥≪≫\!\|∈∉∙≆≃≅×±¬∤⊍⨄\~≡≢≈≉⊂⊆⊃⊇≠\+\-\*⊤⊥⊨⊢⌈⌉⌊𝨨⌋⊈⊉▢≰≱†]/ | /(?<= )\\(?= )/ | /=(?<![<|])(?!>)/ | /<(?!\=)/ | />(?<!\=)/
 // old backslash /\\(?![\\\]\[\)\(}{\|)])/
 KEYWORD_OPERATOR:  "limsup" | "liminf" | "arccos" | "arcsin"  | "argmax" | "argmin" | "mod" | "min" | "max" | "sin" | "cos" | "tan" | "exp" | "log" | "ln" | "sup" | "inf" | "sgn" | "lim" | "diag" | "span" |  "conv" |  "cone" 
 
 MATH_SYMBOLS: /[∞⟨⟩⋱︙⠇∇⊥∅↾◦○￮∝¶✓≼≺⇳⇕⇓⇑↓↑⊄⊅⋡∋⊴⊵⊲⊳⋪⋫⋬⋭∦⌈⌉⌊𝨨⌋⊊⊋]/
-MATH_GREEK_SYMBOLS: /[αβγδεφηικλμν𝛝ωπΘψρστυχξζΩΨΣΔΦΓΛΞ]/
+MATH_GREEK_SYMBOLS: /[αβγδεφηικλμν𝛝ωπΘψρστυχξζΩΨΣΔ∆ΦΓΛΞ]/
 MATH_BB_SYMBOLS: /[𝔸𝔹ℂ𝔻𝔼𝔽𝔾ℍ𝕀𝕁𝕂𝕃𝕄ℕ𝕆ℙℚℝ𝕊𝕋𝕌𝕍𝕎𝕏𝕐ℤ]/
 MATH_CAL_SYMBOLS: /[𝓐𝓑𝓒𝓓𝓔𝓕𝓖𝓗𝓘𝓙𝓚𝓛𝓜𝓝𝓞𝓟𝓠𝓡𝓢𝓣𝓤𝓥𝓦𝓧𝓨𝓩]/
 
@@ -173,58 +173,66 @@ _ARRAY_ROW_DIVIDER: "&&"
 
 // over/underline/sub/superscript
 
-OVERLINE_OPERATOR: /\^(?=[ \t\n}`])/
-UNDERLINE_OPERATOR: /_(?=[ \t\n}`])/
+OVERLINE_OPERATOR: /(?<=[ \t\n{`])\^/
+UNDERLINE_OPERATOR: /(?<=[ \t\n{`])_/
 SUPERSCRIPT_OPERATOR: /\^(?![ \t}`])/
 SUBSCRIPT_OPERATOR: /_(?![ \t}`])/
 
 
 
-//////////////////////////////////////////////////////////////////
 
 
-math_content: _INLINE_WHITESPACE? (expression | array | _structural | inline_whitespace | NEWLINE | comment)+ _INLINE_WHITESPACE?
-
-// expression: (_math_object inline_whitespace?)* _math_object
-expression: (_math_object inline_whitespace)* _math_object
-
-sub_expression: SINGLE_OPEN_BRACKET _INLINE_WHITESPACE? expression _INLINE_WHITESPACE? CLOSE_BRACKET
-              | OPEN_BRACKET _INLINE_WHITESPACE? expression _INLINE_WHITESPACE? SINGLE_CLOSE_BRACKET
-              | symbol
 
 
-          
-_math_object: term | sub_expression | sub_super_script_term | underline_overline | fraction | root | text_block | array
+////////////////////////////////////////////////////////////////// newnew:
+
+
+// expression: (term (inline_whitespace | NEWLINE)*)* term
+
+_sub_expression: sub_expression | symbol
+
+// sub_expression: SINGLE_OPEN_BRACKET _INLINE_WHITESPACE? expression _INLINE_WHITESPACE? CLOSE_BRACKET
+//               | OPEN_BRACKET _INLINE_WHITESPACE? expression _INLINE_WHITESPACE? SINGLE_CLOSE_BRACKET
+
+sub_expression: OPEN_BRACKET _INLINE_WHITESPACE? expression _INLINE_WHITESPACE? CLOSE_BRACKET
+
+// term: symbol+ | sub_expression | sub_super_script_term | underline_overline | fraction | root | text_block | array | comment
+
+
+
+expression: _expression
+
+_expression: term
+           | term (inline_whitespace | NEWLINE)+ _expression
+           | term _term
+           | term _expression
+           | _term (inline_whitespace | NEWLINE)* _expression
+           | _term
+
+
+term: symbol+
+_term: sub_expression | sub_super_script_term | underline_overline | fraction | root | text_block | array | comment
 
 // atomic
 
-_structural: PUNCTUATION | PARENTHESES
-
-term: symbol+
-symbol: SHORTCUT_OPERATOR | UNICODE_OPERATOR | KEYWORD_OPERATOR | NUMBER | LETTER | MATH_GREEK_SYMBOLS | MATH_BB_SYMBOLS | MATH_CAL_SYMBOLS | MATH_SYMBOLS | PUNCTUATION | PARENTHESES
+symbol: SHORTCUT_OPERATOR | KEYWORD_OPERATOR | UNICODE_OPERATOR | NUMBER | LETTER | MATH_GREEK_SYMBOLS | MATH_BB_SYMBOLS | MATH_CAL_SYMBOLS | MATH_SYMBOLS | PUNCTUATION | PARENTHESES
 
 text_block: _TEXT_BLOCK_DELIMITER MATH_TEXT _TEXT_BLOCK_DELIMITER
 
 // operations
 
-underline_overline: sub_expression (OVERLINE_OPERATOR | UNDERLINE_OPERATOR)
+underline_overline: (OVERLINE_OPERATOR | UNDERLINE_OPERATOR) (array | _sub_expression) 
 
-sub_super_script_term: sub_expression SUBSCRIPT_OPERATOR sub_expression SUPERSCRIPT_OPERATOR sub_expression
-                     | sub_expression SUPERSCRIPT_OPERATOR sub_expression SUBSCRIPT_OPERATOR sub_expression
-                     | sub_expression (SUBSCRIPT_OPERATOR | SUPERSCRIPT_OPERATOR) sub_expression
+sub_super_script_term: (array | _sub_expression) SUBSCRIPT_OPERATOR _sub_expression SUPERSCRIPT_OPERATOR _sub_expression
+                     | (array | _sub_expression) SUPERSCRIPT_OPERATOR _sub_expression SUBSCRIPT_OPERATOR _sub_expression
+                     | (array | _sub_expression) (SUBSCRIPT_OPERATOR | SUPERSCRIPT_OPERATOR) _sub_expression
                 
                 
-fraction: sub_expression DIVISION_OPERATOR sub_expression
-root: sub_expression? ROOT_OPERATOR sub_expression
+fraction: (array | _sub_expression) DIVISION_OPERATOR (array | _sub_expression)
+root: _sub_expression? ROOT_OPERATOR _sub_expression
 
 // array
 
 array: ARRAY_OPEN (_INLINE_WHITESPACE? _NEWLINE)? (array_row ((_ARRAY_ROW_DIVIDER | _NEWLINE) array_row)+) _INLINE_WHITESPACE? _NEWLINE? _INLINE_WHITESPACE? ARRAY_CLOSE
 array_row: _array_item (_INLINE_WHITESPACE? ARRAY_COLUMN_DIVIDER _array_item)*
-_array_item: _INLINE_WHITESPACE? (expression | comment | text_block | inline_whitespace)+ _INLINE_WHITESPACE? 
-
-
-
-
-
-
+_array_item: _INLINE_WHITESPACE? expression _INLINE_WHITESPACE? 

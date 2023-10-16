@@ -4,6 +4,8 @@
 from napkin import Napkin
 import argparse
 import timeit
+from shutil import copy
+from os import mkdir, path
 
 
 
@@ -46,10 +48,24 @@ def main():
 	argParser.add_argument('-i', '--input', default='', type=str, help='Input file path')
 	argParser.add_argument('-o', '--output', default='', type=str, help='Output file path')
 	argParser.add_argument('-s', '--silent', default=False, type=str, help='Progress feedback.')
+	argParser.add_argument('-p', '--prepare', default=False, type=str, help='Prepare directory.')
 
 	args = argParser.parse_args()
 
-	parse(args.input, args.output, args.silent == 'True')
+	if args.prepare:
+		try:
+			mkdir('build')
+			mkdir('source')
+
+		except FileExistsError:
+			pass
+
+		wrapperPath = path.join(path.dirname(__file__), 'wrapper.tex')
+
+		copy(wrapperPath, 'build/main.tex')
+
+	else:
+		parse(args.input, args.output, args.silent == 'True')
 
 
 

@@ -1,0 +1,117 @@
+\documentclass[10pt]{book}
+\usepackage[a4paper,bindingoffset=0.2in,%
+            left=0.75in,%
+            right=0.75in,%
+            top=1in, bottom=1in,%
+            footskip=.25in]{geometry}
+\usepackage[english]{babel}
+\usepackage[plainpages=false]{hyperref}
+\usepackage{bookmark}
+\usepackage[utf8x]{inputenc}
+\usepackage{cancel}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{subfiles}
+\usepackage{amsthm}
+\usepackage{thmtools}
+\usepackage{tikz}
+\usepackage{nicefrac}
+
+
+
+
+
+\DeclareMathOperator*{\spn}{span}
+\DeclareMathOperator*{\sgn}{sgn}
+\DeclareMathOperator*{\diag}{diag}
+\DeclareMathOperator*{\argmax}{argmax}
+\DeclareMathOperator*{\argmin}{argmin}
+
+
+\declaretheoremstyle[
+    notefont=\itshape,
+    notebraces={}{},
+    bodyfont=\normalfont,
+    headformat=\NAME:\NOTE,
+    headpunct= ,
+    postheadhook=\phantom,
+    spaceabove=0.75em,
+    spacebelow=1.5em
+]{main}
+
+\declaretheoremstyle[
+    notefont=\itshape,
+    notebraces={}{},
+    bodyfont=\normalfont,
+    headformat=\NOTE,
+    headpunct= ,
+    postheadhook=\phantom,
+    spaceabove=0.75em,
+    spacebelow=1.5em
+]{block}
+
+\declaretheoremstyle[
+    headfont=\itshape\bfseries,
+    notebraces={}{},
+    bodyfont=\normalfont,
+    headformat=\NAME,
+    headpunct= ,
+    postheadhook=\phantom,
+    spaceabove=0.75em,
+    spacebelow=1.5em
+]{proof}
+
+\makeatletter
+\newcommand{\thlabel}[1]{
+    \thmt@thmname:
+    \ifx\@currentlabelname\@empty
+    \else
+      \space\@currentlabelname%
+    \fi
+}
+ 
+\makeatletter
+\newcommand{\blklabel}[1]{
+    \ifx\@currentlabelname\@empty
+    \else
+      \space\@currentlabelname%
+    \fi}
+
+\newcommand{\thbookmark}{\bookmark[dest=\@currentHref,rellevel=1,keeplevel,]{\thlabel{\thmt@envname}}}
+
+\newcommand{\blkbookmark}{\bookmark[dest=\@currentHref,rellevel=1,keeplevel,]{\blklabel{\thmt@envname}}}
+
+\declaretheorem[title=Example, style=main, postheadhook=\thbookmark, postfoothook=\hrule]{example}
+\declaretheorem[title=Exercise, style=main, postheadhook=\thbookmark, postfoothook=\hrule]{exercise}
+\declaretheorem[title=Definition, style=main, postheadhook=\thbookmark, postfoothook=\hrule]{definition}
+\declaretheorem[title=Observation, style=main, postheadhook=\thbookmark, postfoothook=\hrule]{observation}
+\declaretheorem[title=Cojecture, style=main, postheadhook=\thbookmark, postfoothook=\hrule]{conjecture}
+\declaretheorem[title=Lemma, style=main, postheadhook=\thbookmark, postfoothook=\hrule]{lemma}
+\declaretheorem[title=Problem, style=main, postheadhook=\thbookmark, postfoothook=\hrule]{problem}
+\declaretheorem[title=Algorithm, style=main, postheadhook=\thbookmark, postfoothook=\hrule]{algorithm}
+\declaretheorem[title=Theorem, style=main, postheadhook=\thbookmark, postfoothook=\hrule]{theorem}
+\declaretheorem[title=Note, style=main, postheadhook=\thbookmark, postfoothook=\hrule]{note}
+\declaretheorem[title=Claim, style=main, postheadhook=\thbookmark, postfoothook=\hrule]{claim}
+\declaretheorem[title=Corollary, style=main, postheadhook=\thbookmark, postfoothook=\hrule]{corollary}
+\declaretheorem[title=Fact, style=main, postheadhook=\thbookmark, postfoothook=\hrule]{fact}
+\declaretheorem[title=Proposition, style=main, postheadhook=\thbookmark, postfoothook=\hrule]{proposition}
+\declaretheorem[title=Block, style=block, postheadhook=\blkbookmark, postfoothook=\hrule]{block}
+
+
+\begin{document}
+
+
+\cleardoublepage
+
+% \subfile{../source/*.tex}
+
+
+
+
+\cleardoublepage
+
+\pagebreak
+
+
+\end{document}
