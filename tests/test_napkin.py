@@ -3,7 +3,7 @@ import unittest
 from os import path, listdir
 from glob import glob
 
-from napkin.napkin import Napkin
+from napkin import Napkin
 
 
 
