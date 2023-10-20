@@ -281,7 +281,8 @@ class Compiler(Visitor_Recursive):
 
         '▢' : '\\Box',
 
-        '†' : '\\dagger'
+        '†' : '\\dagger',
+        '≶' : '\\lessgtr',
     }
 
     operator_map = {
@@ -780,7 +781,27 @@ class Compiler(Visitor_Recursive):
                 
     def text_block(self, tree):
         tree.result = f'\\enskip \\text{{{tree.children[0].value}}} \\enskip '
-                        
+
+
+    def bold_text(self, tree):
+        tree.result = f'\\textbf{{{tree.children[1].result}}}'
+
+
+    def italic_text(self, tree):
+        tree.result = f'\\textit{{{tree.children[1].result}}}'
+
+
+    def monotype_text(self, tree):
+        tree.result = f'\\texttt{{{tree.children[1].result}}}'
+
+
+    def underline_text(self, tree):
+        tree.result = f'\\underline{{{tree.children[1].result}}}'
+
+
+    def overline_text(self, tree):
+        tree.result = f'\\overline{{{tree.children[1].result}}}'
+
     
     def structural(self, tree):
         content = f'{tree.children[0].value}'
@@ -813,7 +834,7 @@ class Compiler(Visitor_Recursive):
         self._gatherFromChildren(tree, space = ' ')
         
                     
-    def underline_overline(self, tree):        
+    def formatting(self, tree):        
         # if isinstance(tree.children[1], Token): # nothing before subexpression
         #     result = tree.children[0].result
         #     operation = tree.children[1]
@@ -825,12 +846,18 @@ class Compiler(Visitor_Recursive):
         result = tree.children[1].result
         operation = tree.children[0]    
         
-        if operation.type == 'UNDERLINE_OPERATOR':
-            result = f'\\underline{{{result}}}'
+        if operation.type == 'BOLD_OPERATOR':
+            result = f'\\textbf{{{result}}}'
             
+        elif operation.type == 'ITALIC_OPERATOR':
+            result = f'\\textit{{{result}}}'            
+            
+        elif operation.type == 'UNDERLINE_OPERATOR':
+            result = f'\\underline{{{result}}}' 
+
         elif operation.type == 'OVERLINE_OPERATOR':
-            result = f'\\overline{{{result}}}'            
-            
+            result = f'\\overline{{{result}}}' 
+
         tree.result = result
         
                 

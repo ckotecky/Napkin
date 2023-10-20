@@ -52,11 +52,18 @@ TABLE_SEPPARATOR: "|--" /[^(\n)]*/
 
 SPECIAL_LETTER: /[ěščřžýáíéďňťóúůöĚŠČŘŽÝÁÍÉĎŇŤÓÚŮÖ]/
 PASSIVE_CHARACTER: /[a-zA-Z0-9\(\)\[\]\.,~\+\*\/:;'"_\?&\%]|((?<!#)#(?!#))/ | SPECIAL_LETTER
-WORD: (LETTER | NUMBER | SPECIAL_LETTER | /[\(\)\[\]\.,\!@~\-\+\*\/:;'"_\?&\%]|((?<!#)#(?!#))/  )+
+WORD: (LETTER | NUMBER | SPECIAL_LETTER | /[\(\)\[\]\.,\!@~\-\+(\*(?!{))\/:;'"(_(?!{)))\?&\(%(?!{)))(^(?!{)))]|((?<!#)#(?!#))/  )+
 FIRST_WORD: PASSIVE_CHARACTER WORD?
 
 text: INLINE_WHITESPACE? WORD (INLINE_WHITESPACE WORD)* INLINE_WHITESPACE?
 sanitized_text: INLINE_WHITESPACE? FIRST_WORD (INLINE_WHITESPACE WORD)* INLINE_WHITESPACE?
+
+// formatting
+
+BOLD_TEXT_DELIMITER: "*{"
+ITALIC_TEXT_DELIMITER: "%{"
+UNDERLINE_TEXT_DELIMITER: "_{"
+OVERLINE_TEXT_DELIMITER: "^{"
 
 // list
 
@@ -77,13 +84,22 @@ title: (TITLE | INLINE_WHITESPACE | math_block)+
 _object: (chapter_header | section_header | subsection_header | subsubsection_header | list_item | block | table | center | content | inline_whitespace)
 _inline_object: (chapter_header | section_header | subsection_header | subsubsection_header | list_item | block | table | center | inline_content)
 
-content: INLINE_WHITESPACE? (image | comment | sanitized_text | math_block) (image | comment | text | math_block | INLINE_WHITESPACE)* INLINE_WHITESPACE?
-inline_content: INLINE_WHITESPACE? (image | comment | text | math_block) (image | comment | text | math_block | INLINE_WHITESPACE)* INLINE_WHITESPACE?
+content: INLINE_WHITESPACE? (image | comment | sanitized_text | bold_text | italic_text | underline_text | overline_text | math_block) (image | comment | text | bold_text | italic_text | underline_text | overline_text | math_block | INLINE_WHITESPACE)* INLINE_WHITESPACE?
+inline_content: INLINE_WHITESPACE? (image | comment | text | bold_text | italic_text | underline_text | overline_text | math_block) (image | comment | text | bold_text | italic_text | underline_text | overline_text | math_block | INLINE_WHITESPACE)* INLINE_WHITESPACE?
 
 // lists
 
 list_bullet: SIMPLE_LIST_BULLET (/[^ `]/ | math_block)* | COMPOSITE_LIST_BULLET (/[^`}]/ | math_block)* "}" 
 list_item: INLINE_WHITESPACE? list_bullet (INLINE_WHITESPACE inline_content)? _INLINE_WHITESPACE?
+
+// formatting
+
+bold_text: BOLD_TEXT_DELIMITER text CLOSE_BRACKET
+italic_text: ITALIC_TEXT_DELIMITER text CLOSE_BRACKET
+underline_text: UNDERLINE_TEXT_DELIMITER text CLOSE_BRACKET
+overline_text: OVERLINE_TEXT_DELIMITER text CLOSE_BRACKET
+// monotype_text:
+
 
 // block
 
@@ -102,7 +118,7 @@ center: INLINE_WHITESPACE? CENTER_OPEN (_INLINE_WHITESPACE | NEWLINE)* (_inline_
 table: table_row+
 table_row: TABLE_DELIMITER (table_content _INLINE_WHITESPACE? TABLE_DELIMITER)+ _INLINE_WHITESPACE? _NEWLINE
          | TABLE_SEPPARATOR _NEWLINE
-table_content: (comment | text | math_block | _INLINE_WHITESPACE)*
+table_content: (comment | text | bold_text | italic_text | underline_text | overline_text | math_block | _INLINE_WHITESPACE)*
 
 // math block
 
@@ -139,7 +155,7 @@ PARENTHESES: "(" | ")" | "[" | "]" | /\|(?!\-)/ | "{{" | "}}"
 PUNCTUATION: "," | "'" | ":" | ";" | "?" | "\""  | " /" | "/ " | "."
 
 SHORTCUT_OPERATOR: "<=>" | "<=" | "=>" | "|->" | "->" | "<-" | "<->" | ">>" | "<<" | "\\Σ" | "\\π" | "\\∪" | "\\∩" | "\\∫" | "\\∨" | "\\∧" | "\\⊕"
-UNICODE_OPERATOR: /[∧∨∩∪∀∃∄∂∫≤≥≪≫\!\|∈∉∙≆≃≅×±¬∤⊍⨄\~≡≢≈≉⊂⊆⊃⊇≠\+\-\*⊤⊥⊨⊢⌈⌉⌊𝨨⌋⊈⊉▢≰≱†]/ | /(?<= )\\(?= )/ | /=(?<![<|])(?!>)/ | /<(?!\=)/ | />(?<!\=)/
+UNICODE_OPERATOR: /[≶∧∨∩∪∀∃∄∂∫≤≥≪≫\!\|∈∉∙≆≃≅×±¬∤⊍⨄\~≡≢≈≉⊂⊆⊃⊇≠\+\-⊤⊥⊨⊢⌈⌉⌊𝨨⌋⊈⊉▢≰≱†]/ | /(?<= )\\(?= )/ | /=(?<![<|])(?!>)/ | /<(?!\=)/ | />(?<!\=)/ | /\*(?=[ \t\n,\.}\)\]`])/ | /%(?=[ \t\n,\.}\)\]`])/
 // old backslash /\\(?![\\\]\[\)\(}{\|)])/
 KEYWORD_OPERATOR:  "limsup" | "liminf" | "arccos" | "arcsin"  | "argmax" | "argmin" | "mod" | "min" | "max" | "sin" | "cos" | "tan" | "exp" | "log" | "ln" | "sup" | "inf" | "sgn" | "lim" | "diag" | "span" |  "conv" |  "cone" 
 
@@ -173,8 +189,11 @@ _ARRAY_ROW_DIVIDER: "&&"
 
 // over/underline/sub/superscript
 
-OVERLINE_OPERATOR: /(?<=[ \t\n{`])\^/
-UNDERLINE_OPERATOR: /(?<=[ \t\n{`])_/
+BOLD_OPERATOR: /(?<=[ \t\n{(\[`])\*(?! \t\n})/
+ITALIC_OPERATOR: /(?<=[ \t\n{(\[`])%(?! \t\n})/
+// MONOTYPE_OPERATOR: 
+OVERLINE_OPERATOR: /(?<=[ \t\n{(\[`])\^/
+UNDERLINE_OPERATOR: /(?<=[ \t\n{(\[`])_/
 SUPERSCRIPT_OPERATOR: /\^(?![ \t}`])/
 SUBSCRIPT_OPERATOR: /_(?![ \t}`])/
 
@@ -187,21 +206,10 @@ SUBSCRIPT_OPERATOR: /_(?![ \t}`])/
 ////////////////////////////////////////////////////////////////// newnew:
 
 
-// expression: (term (inline_whitespace | NEWLINE)*)* term
-
 _sub_expression: sub_expression | symbol
-
-// sub_expression: SINGLE_OPEN_BRACKET _INLINE_WHITESPACE? expression _INLINE_WHITESPACE? CLOSE_BRACKET
-//               | OPEN_BRACKET _INLINE_WHITESPACE? expression _INLINE_WHITESPACE? SINGLE_CLOSE_BRACKET
-
 sub_expression: OPEN_BRACKET _INLINE_WHITESPACE? expression _INLINE_WHITESPACE? CLOSE_BRACKET
 
-// term: symbol+ | sub_expression | sub_super_script_term | underline_overline | fraction | root | text_block | array | comment
-
-
-
 expression: _expression
-
 _expression: term
            | term (inline_whitespace | NEWLINE)+ _expression
            | term _term
@@ -211,7 +219,7 @@ _expression: term
 
 
 term: symbol+
-_term: sub_expression | sub_super_script_term | underline_overline | fraction | root | text_block | array | comment
+_term: sub_expression | sub_super_script_term | formatting | fraction | root | text_block | array | comment
 
 // atomic
 
@@ -221,7 +229,7 @@ text_block: _TEXT_BLOCK_DELIMITER MATH_TEXT _TEXT_BLOCK_DELIMITER
 
 // operations
 
-underline_overline: (OVERLINE_OPERATOR | UNDERLINE_OPERATOR) (array | _sub_expression) 
+formatting: (BOLD_OPERATOR | ITALIC_OPERATOR | OVERLINE_OPERATOR | UNDERLINE_OPERATOR) (array | _sub_expression) 
 
 sub_super_script_term: (array | _sub_expression) SUBSCRIPT_OPERATOR _sub_expression SUPERSCRIPT_OPERATOR _sub_expression
                      | (array | _sub_expression) SUPERSCRIPT_OPERATOR _sub_expression SUBSCRIPT_OPERATOR _sub_expression
