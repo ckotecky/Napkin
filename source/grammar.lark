@@ -211,7 +211,7 @@ SUBSCRIPT_OPERATOR: /_(?![ \t}`])/
 
 
 _sub_expression: sub_expression | symbol
-sub_expression: OPEN_BRACKET _INLINE_WHITESPACE? expression _INLINE_WHITESPACE? CLOSE_BRACKET
+sub_expression: OPEN_BRACKET _INLINE_WHITESPACE? inline_expression _INLINE_WHITESPACE? CLOSE_BRACKET
 
 expression: _expression
 _expression: term
@@ -221,6 +221,13 @@ _expression: term
            | _term (inline_whitespace | NEWLINE)* _expression
            | _term
 
+inline_expression: _inline_expression
+_inline_expression: term
+           | term inline_whitespace+ _inline_expression
+           | term _term
+           | term _inline_expression
+           | _term inline_whitespace* _inline_expression
+           | _term
 
 term: symbol+
 _term: sub_expression | sub_super_script_term | formatting | fraction | root | text_block | array | comment
@@ -246,8 +253,8 @@ root: _sub_expression? ROOT_OPERATOR _sub_expression
 // array
 
 array: ARRAY_OPEN (_INLINE_WHITESPACE? _NEWLINE)? (array_row ((_ARRAY_ROW_DIVIDER | _NEWLINE) array_row)+) _INLINE_WHITESPACE? _NEWLINE? _INLINE_WHITESPACE? ARRAY_CLOSE
-array_row: _array_item (_INLINE_WHITESPACE? ARRAY_COLUMN_DIVIDER _array_item)*
-_array_item: _INLINE_WHITESPACE? expression? _INLINE_WHITESPACE? 
+array_row: _array_item (_INLINE_WHITESPACE? ARRAY_COLUMN_DIVIDER _array_item)+
+_array_item: _INLINE_WHITESPACE? inline_expression? _INLINE_WHITESPACE? 
 
 
 
