@@ -45,8 +45,11 @@ _MATH_BLOCK_DELIMITER: /(?!<`)`(?!`)/
 
 // table
 
-TABLE_DELIMITER: "||" | "|"
+_table_delimiter: TABLE_SINGLE_DELIMITER | TABLE_DOUBLE_DELIMITER
+TABLE_SINGLE_DELIMITER: /((?<!\|)\|(?!\|))/
+TABLE_DOUBLE_DELIMITER: "||"
 TABLE_SEPPARATOR: "|--" /[^(\n)]*/
+TABLE_ALIGNMENT: "<" | ">"
 
 // text
 
@@ -116,8 +119,9 @@ center: INLINE_WHITESPACE? CENTER_OPEN (_INLINE_WHITESPACE | NEWLINE)* (_inline_
 // table
 
 table: table_row+
-table_row: TABLE_DELIMITER (table_content _INLINE_WHITESPACE? TABLE_DELIMITER)+ _INLINE_WHITESPACE? _NEWLINE
+table_row: table_item+ _table_delimiter _INLINE_WHITESPACE? _NEWLINE
          | TABLE_SEPPARATOR _NEWLINE
+table_item: _table_delimiter _INLINE_WHITESPACE? TABLE_ALIGNMENT? _INLINE_WHITESPACE? table_content _INLINE_WHITESPACE?
 table_content: (comment | text | bold_text | italic_text | underline_text | overline_text | math_block | _INLINE_WHITESPACE)*
 
 // math block
@@ -155,7 +159,7 @@ PARENTHESES: "(" | ")" | "[" | "]" | /\|(?!\-)/ | "{{" | "}}"
 PUNCTUATION: "," | "'" | ":" | ";" | "?" | "\""  | " /" | "/ " | "."
 
 SHORTCUT_OPERATOR: "<=>" | "<=" | "=>" | "|->" | "->" | "<-" | "<->" | ">>" | "<<" | "\\Σ" | "\\π" | "\\∪" | "\\∩" | "\\∫" | "\\∨" | "\\∧" | "\\⊕"
-UNICODE_OPERATOR: /[≶∧∨∩∪∀∃∄∂∫≤≥≪≫\!\|∈∉∙≆≃≅×±¬∤⊍⨄\~≡≢≈≉⊂⊆⊃⊇≠\+\-⊤⊥⊨⊢⌈⌉⌊𝨨⌋⊈⊉▢≰≱†]/ | /(?<= )\\(?= )/ | /=(?<![<|])(?!>)/ | /<(?!\=)/ | />(?<!\=)/ | /\*(?=[ \t\n,\.}\)\]`])/ | /%(?=[ \t\n,\.}\)\]`])/
+UNICODE_OPERATOR: /[≶∧∨∩∪∀∃∄∂∫≤≥≪≫\!\|∈∉∙≆≃≅×±¬∤⊍⨄\~≡≢≈≉⊂⊆⊃⊇≠\+\-⊤⊥⊨⊢⌈⌉⌊𝨨⌋⊈⊉▢≰≱†☐⟦⟧⊕∥]/ | /(?<= )\\(?= )/ | /=(?<![<|])(?!>)/ | /<(?!\=)/ | />(?<!\=)/ | /(?<=[\^_])\*/ | /\*(?=[ \t\n,\.}\)\]`])/ | /%(?=[ \t\n,\.}\)\]`])/ | /((?<!#)#(?!#))/
 // old backslash /\\(?![\\\]\[\)\(}{\|)])/
 KEYWORD_OPERATOR:  "limsup" | "liminf" | "arccos" | "arcsin"  | "argmax" | "argmin" | "mod" | "min" | "max" | "sin" | "cos" | "tan" | "exp" | "log" | "ln" | "sup" | "inf" | "sgn" | "lim" | "diag" | "span" |  "conv" |  "cone" 
 
@@ -182,8 +186,8 @@ MATH_TEXT: /[^`]+/
 
 // array
 
-ARRAY_OPEN: /(\\[\(\[\{\\\|])/
-ARRAY_CLOSE: /(\\[\)\]}\\\|])/
+ARRAY_OPEN: /(\\[\(\[\{\\\|(\|\|)])/
+ARRAY_CLOSE: /(\\[\)\]}\\\|(\|\|)])/
 ARRAY_COLUMN_DIVIDER: /(?<!&)&(?!&)/
 _ARRAY_ROW_DIVIDER: "&&"
 
@@ -243,4 +247,11 @@ root: _sub_expression? ROOT_OPERATOR _sub_expression
 
 array: ARRAY_OPEN (_INLINE_WHITESPACE? _NEWLINE)? (array_row ((_ARRAY_ROW_DIVIDER | _NEWLINE) array_row)+) _INLINE_WHITESPACE? _NEWLINE? _INLINE_WHITESPACE? ARRAY_CLOSE
 array_row: _array_item (_INLINE_WHITESPACE? ARRAY_COLUMN_DIVIDER _array_item)*
-_array_item: _INLINE_WHITESPACE? expression _INLINE_WHITESPACE? 
+_array_item: _INLINE_WHITESPACE? expression? _INLINE_WHITESPACE? 
+
+
+
+
+
+
+

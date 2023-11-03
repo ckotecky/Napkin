@@ -5,27 +5,6 @@ from lark.lexer import Token
 
 
 class Compiler(Visitor_Recursive):
-    # blockMap = {
-    #     'df' : 'definition',
-    #     'th' : 'theorem',
-    #     'ex' : 'example',
-    #     'exc' : 'exercise',
-    #     'exr' : 'exercise',
-    #     'lm' : 'lemma',
-    #     'ob' : 'observation',
-    #     'pz' : 'pozorovani',
-    #     'pp' : 'proposition',
-    #     'cr' : 'corollary',
-    #     'nt' : 'note',
-    #     'pb' : 'problem',
-    #     'alg' : 'algorithm',
-    #     'blk' : 'block',
-    #     'rmrk' : 'remark',
-    #     'fact' : 'fact',
-    #     'cv' : 'cviceni',
-    #     'cj' : 'conjecture',
-    #     'proof' : 'proof'
-    # }
     blockMap = {
         'df' : 'definition',
         'th' : 'theorem',
@@ -279,10 +258,18 @@ class Compiler(Visitor_Recursive):
         '⌊' : '\\lfloor',
         '⌋' : '\\rfloor',
 
+        '⟦' : '[\\![',
+        '⟧' : ']\\!]',
+
         '▢' : '\\Box',
+        '☐' : '\\Box',
 
         '†' : '\\dagger',
         '≶' : '\\lessgtr',
+
+        '#' : '\\#',
+        '⊕' : '\\oplus',
+        '∥' : '\\|',
     }
 
     operator_map = {
@@ -380,6 +367,11 @@ class Compiler(Visitor_Recursive):
         '%' : '\\%'
         # '$' : '\\$'
     }
+
+    tableAlignment = {
+        '\\<' : 'l',
+        '\\>' : 'r'
+    }
     
     commandSymbols = { 'MATH_GREEK_SYMBOLS', 'MATH_BB_SYMBOLS', 'MATH_CAL_SYMBOLS', 'MATH_SYMBOLS', 'MATH_OPERATOR_A', 'MATH_OPERATOR_B', 'UNICODE_OPERATOR', 'SHORTCUT_OPERATOR', 'KEYWORD_OPERATOR' }
     
@@ -464,16 +456,12 @@ class Compiler(Visitor_Recursive):
         
         
     def table(self, tree):
-        columnCount = 1
-        
         rows = ''
         
         for child in tree.children:
             rows += child.result
-            columnCount = max(child.columnCount, columnCount)
 
-        columnSignature = ' ' + (columnCount * 'c ')
-        tree.result = f'\n\\begin{{tabular}}{{{columnSignature}}}\n'
+        tree.result = f'\n\\begin{{tabular}}{{{tree.children[0].align}}}\n'
         tree.result += rows
         tree.result += '\n\\end{tabular}\n'
         
@@ -481,25 +469,36 @@ class Compiler(Visitor_Recursive):
     def table_row(self, tree):
         tree.columnCount = 1
         
-        if tree.children[0].type == 'TABLE_SEPPARATOR':
+        if isinstance(tree.children[0], Token) and tree.children[0].type == 'TABLE_SEPPARATOR':
             tree.result = '\t\\hline\n'    
 
         else: 
             tree.result = '\t'
-            
-            for child in tree.children[1:len(tree.children) - 1]:
-                if isinstance(child, Tree):
-                    tree.result += child.result
+            tree.align = ''
 
-                elif isinstance(child, Token):
-                    if child.type == 'TABLE_DELIMITER':
-                        tree.result += ' & '
-                        tree.columnCount += 1
+            for child in tree.children[:- 2]:
+                tree.result += child.result + ' & '
+                tree.align += child.align
 
-                    else:
-                        tree.result += child.value
-                
+            tree.result += tree.children[- 2].result
+            tree.align += tree.children[- 2].align
+
             tree.result += '\\\\\n'
+
+
+    def table_item(self, tree):
+        # print(tree.children)
+
+        tree.align = '' if tree.children[0].type == 'TABLE_SINGLE_DELIMITER' else '|'
+
+        if isinstance(tree.children[1], Token) and tree.children[1].type == 'TABLE_ALIGNMENT':
+            tree.align += ('l' if tree.children[1].value == '<' else 'r')
+            tree.result = tree.children[2].result
+
+        else:
+            tree.align += 'c'
+            tree.result = tree.children[1].result
+
         
 
     def chapter_header(self, tree):
@@ -648,7 +647,7 @@ class Compiler(Visitor_Recursive):
         for child in tree.children[1:-2]:
             r = child.result
 
-            if r.lstrip()[0] == '[':
+            if len(r.lstrip()) > 0 and r.lstrip()[0] == '[':
                 r = r.replace('[', '{[}', 1)
 
             rows += '\t' + r + '\\\\\n'
@@ -657,7 +656,7 @@ class Compiler(Visitor_Recursive):
         # add last row sepparately without a latex newline at the end
         r = '\t' + tree.children[-2].result + '\n'
 
-        if r.lstrip()[0] == '[':
+        if len(r.lstrip()) > 0 and r.lstrip()[0] == '[':
             r = r.replace('[', '{[}', 1)
 
         rows += r
@@ -835,14 +834,6 @@ class Compiler(Visitor_Recursive):
         
                     
     def formatting(self, tree):        
-        # if isinstance(tree.children[1], Token): # nothing before subexpression
-        #     result = tree.children[0].result
-        #     operation = tree.children[1]
-            
-        # else:
-        #     result = tree.children[1].result
-        #     operation = tree.children[2]  
-
         result = tree.children[1].result
         operation = tree.children[0]    
         
