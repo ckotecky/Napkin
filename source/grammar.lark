@@ -253,7 +253,7 @@ root: _sub_expression? ROOT_OPERATOR _sub_expression
 // array
 
 array: ARRAY_OPEN (_INLINE_WHITESPACE? _NEWLINE)? (array_row ((_ARRAY_ROW_DIVIDER | _NEWLINE) array_row)+) _INLINE_WHITESPACE? _NEWLINE? _INLINE_WHITESPACE? ARRAY_CLOSE
-array_row: _array_item (_INLINE_WHITESPACE? ARRAY_COLUMN_DIVIDER _array_item)+
+array_row: _array_item (_INLINE_WHITESPACE? ARRAY_COLUMN_DIVIDER _array_item)*
 _array_item: _INLINE_WHITESPACE? inline_expression? _INLINE_WHITESPACE? 
 
 
