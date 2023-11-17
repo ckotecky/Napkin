@@ -270,6 +270,10 @@ class Compiler(Visitor_Recursive):
         '#' : '\\#',
         '⊕' : '\\oplus',
         '∥' : '\\|',
+        '≺' : '\\prec',
+        '≻' : '\\succ',
+        '≼' : '\\preceq',
+        '≽' : '\\succeq',
     }
 
     operator_map = {
@@ -731,7 +735,16 @@ class Compiler(Visitor_Recursive):
 
             
     def fraction(self, tree):    
-        tree.result = f'\\frac{{{tree.children[0].result}}}{{{tree.children[-1].result}}}'
+        numerator = tree.children[0].result
+        denominator = tree.children[-1].result
+
+        nicefrac_threshold = 2
+
+        if len(numerator) <= nicefrac_threshold or len(denominator) <= nicefrac_threshold:
+            tree.result = f'\\nicefrac{{{numerator}}}{{{denominator}}}'
+
+        else:
+            tree.result = f'\\frac{{{numerator}}}{{{denominator}}}'
             
 
     def root(self, tree):    
