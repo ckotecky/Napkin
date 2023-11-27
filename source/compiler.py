@@ -190,6 +190,7 @@ class Compiler(Visitor_Recursive):
         '\\∨' : '\\bigvee\\limits',
         '\\∧' : '\\bigwedge\\limits',
         '\\⊕' : '\\bigoplus\\limits',
+        '\\⊗' : '\\bigotimes\\limits',
     }
 
     unicode_operator_map = {
@@ -269,6 +270,7 @@ class Compiler(Visitor_Recursive):
 
         '#' : '\\#',
         '⊕' : '\\oplus',
+        '⊗' : '\\otimes',
         '∥' : '\\|',
         '≺' : '\\prec',
         '≻' : '\\succ',
